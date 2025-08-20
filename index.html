@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <title>マス目視野トレーニング</title>
+  <title>視野トレーニング</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     body {
@@ -44,7 +44,7 @@
     .grid {
       display: grid;
       gap: 8px;
-      margin-bottom: 20px;
+      margin: 20px 0;
     }
     .cell {
       display: flex;
@@ -85,6 +85,27 @@
     #start:active {
       transform: scale(0.98);
     }
+    #timer {
+      font-size: 20px;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+    #result {
+      font-size: 22px;
+      font-weight: bold;
+      color: #ffeb3b;
+      margin-top: 10px;
+    }
+    #highscore {
+      font-size: 18px;
+      margin-top: 8px;
+      font-weight: bold;
+      color: #ccc;
+    }
+    #highscore.new {
+      color: #76ff03; /* NEW RECORD! の時は黄緑に光る */
+      text-shadow: 0 0 8px #76ff03;
+    }
   </style>
 </head>
 <body>
@@ -93,8 +114,11 @@
       <label>縦(N)：<input id="rows" type="number" min="2" max="20" value="5"></label>
       <label>横(M)：<input id="cols" type="number" min="2" max="20" value="5"></label>
     </div>
-    <div id="grid" class="grid"></div>
+    <div id="timer">経過時間: 0.00 秒</div>
+    <div id="grid" class="grid" style="display:none;"></div>
     <button id="start">▶ スタート</button>
+    <div id="result"></div>
+    <div id="highscore"></div>
   </div>
 
   <script>
@@ -102,8 +126,19 @@
     const colsInput = document.getElementById("cols");
     const startBtn = document.getElementById("start");
     const gridEl = document.getElementById("grid");
+    const timerEl = document.getElementById("timer");
+    const resultEl = document.getElementById("result");
+    const highscoreEl = document.getElementById("highscore");
 
     let nextNumber = 1;
+    let totalNumbers = 0;
+    let startTime = null;
+    let timerInterval = null;
+    let highscore = localStorage.getItem("schulte_highscore");
+
+    if (highscore) {
+      highscoreEl.textContent = `🏆 ハイスコア: ${parseFloat(highscore).toFixed(2)} 秒`;
+    }
 
     function shuffle(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
@@ -113,6 +148,18 @@
       return arr;
     }
 
+    function startTimer() {
+      startTime = Date.now();
+      timerInterval = setInterval(() => {
+        const elapsed = (Date.now() - startTime) / 1000;
+        timerEl.textContent = `経過時間: ${elapsed.toFixed(2)} 秒`;
+      }, 50);
+    }
+
+    function stopTimer() {
+      clearInterval(timerInterval);
+    }
+
     function generateGrid(rows, cols) {
       gridEl.innerHTML = "";
       gridEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
@@ -120,6 +167,12 @@
       const numbers = shuffle([...Array(total)].map((_, i) => i + 1));
 
       nextNumber = 1;
+      totalNumbers = total;
+
+      gridEl.style.display = "grid";
+      resultEl.textContent = "";
+      timerEl.textContent = "経過時間: 0.00 秒";
+      stopTimer();
 
       numbers.forEach(num => {
         const div = document.createElement("div");
@@ -129,6 +182,24 @@
           if (num === nextNumber) {
             div.classList.add("correct");
             nextNumber++;
+            if (nextNumber === 2) {
+              startTimer();
+            }
+            if (nextNumber > totalNumbers) {
+              stopTimer();
+              const elapsed = (Date.now() - startTime) / 1000;
+              resultEl.textContent = `🎉 クリア！ 記録: ${elapsed.toFixed(2)} 秒 🎉`;
+
+              if (!highscore || elapsed < highscore) {
+                highscore = elapsed;
+                localStorage.setItem("schulte_highscore", highscore);
+                highscoreEl.textContent = `🏆 NEW RECORD! ${elapsed.toFixed(2)} 秒`;
+                highscoreEl.classList.add("new");
+              } else {
+                highscoreEl.textContent = `🏆 ハイスコア: ${parseFloat(highscore).toFixed(2)} 秒`;
+                highscoreEl.classList.remove("new");
+              }
+            }
           }
         });
         gridEl.appendChild(div);
@@ -140,9 +211,6 @@
       const c = parseInt(colsInput.value, 10);
       generateGrid(r, c);
     });
-
-    // 初期表示
-    generateGrid(parseInt(rowsInput.value,10), parseInt(colsInput.value,10));
   </script>
 </body>
 </html>
