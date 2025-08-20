@@ -2,53 +2,88 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <title>視野トレーニング</title>
+  <title>マス目視野トレーニング</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     body {
-      font-family: sans-serif;
-      background: #111;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1a1a1a, #2b2b2b);
       color: #eee;
       display: flex;
       justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
       padding: 20px;
     }
-    .wrap { max-width: 960px; width: 100%; }
+    .wrap {
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
     .panel {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       display: flex;
-      gap: 8px;
+      justify-content: center;
+      gap: 12px;
       align-items: center;
+      flex-wrap: wrap;
+    }
+    label {
+      font-size: 14px;
     }
     input {
       width: 60px;
-      padding: 4px 6px;
-    }
-    button {
-      padding: 6px 12px;
-      cursor: pointer;
+      padding: 6px;
+      font-size: 16px;
+      text-align: center;
+      border-radius: 6px;
+      border: 1px solid #555;
+      background: #222;
+      color: #eee;
     }
     .grid {
       display: grid;
-      gap: 6px;
+      gap: 8px;
+      margin-bottom: 20px;
     }
     .cell {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #222;
-      border-radius: 6px;
-      min-width: 50px;
-      min-height: 50px;
+      background: #333;
+      border-radius: 8px;
+      min-width: 60px;
+      min-height: 60px;
       font-size: 20px;
       font-weight: bold;
       user-select: none;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .cell:active {
+      transform: scale(0.95);
     }
     .cell.correct {
-      background: #3a8;
+      background: #4caf50;
       color: #fff;
+    }
+    #start {
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #2196f3, #1976d2);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.1s;
+    }
+    #start:hover {
+      background: linear-gradient(135deg, #42a5f5, #1e88e5);
+    }
+    #start:active {
+      transform: scale(0.98);
     }
   </style>
 </head>
@@ -57,9 +92,9 @@
     <div class="panel">
       <label>縦(N)：<input id="rows" type="number" min="2" max="20" value="5"></label>
       <label>横(M)：<input id="cols" type="number" min="2" max="20" value="5"></label>
-      <button id="start">スタート</button>
     </div>
     <div id="grid" class="grid"></div>
+    <button id="start">▶ スタート</button>
   </div>
 
   <script>
@@ -68,7 +103,7 @@
     const startBtn = document.getElementById("start");
     const gridEl = document.getElementById("grid");
 
-    let nextNumber = 1; // 次に押すべき数字
+    let nextNumber = 1;
 
     function shuffle(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
